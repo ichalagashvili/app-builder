@@ -5,7 +5,7 @@ import InternalPage from 'ui/internal-page/InternalPage';
 import { appBuilderVersion } from 'helpers/versions';
 
 const AboutPage = () => (
-  <InternalPage className="AboutPage Yes">
+  <InternalPage className="AboutPage Yes again">
     <Grid fluid>
       <Row>
         <Col xs={12}>
