@@ -36,4 +36,4 @@ jobs:
         echo VERSION=$VERSION
         docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
     - name: Docker Push
-      run: docker push ichalagashvili/irakli-repo
+      run: docker push ichalagashvili/iraklis-builder
