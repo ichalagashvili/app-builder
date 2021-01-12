@@ -21,7 +21,9 @@ jobs:
       run: |
 
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-        
+    - name: Build the Docker image
+      run: |
+
         # Strip git ref prefix from version
         VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
         
@@ -29,11 +31,9 @@ jobs:
         [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
 
         # Use Docker `latest` tag convention
-        [ "$VERSION" == "master" ] && VERSION=latest
+        # [ "$VERSION" == "master" ] && VERSION=latest
+        
         echo VERSION=$VERSION
-    - name: Build the Docker image
-      run: |
-        docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder
-        docker tag $IMAGE_NAME iraklis-builder:$VERSION
+        docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
     - name: Docker Push
       run: docker push ichalagashvili/irakli-repo
