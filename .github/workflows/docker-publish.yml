@@ -23,10 +23,10 @@ jobs:
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
     - name: Build the Docker image
       run: |
-        VERSION=$(cat ../../package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
-        echo VERSION
+        VERSION=$(cat ./package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
+        echo $VERSION
         VERSION = $VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g'
-        echo VERSION
+        echo $VERSION
         
         echo VERSION=$VERSION
         docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
