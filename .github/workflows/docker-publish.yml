@@ -21,14 +21,9 @@ jobs:
       run: |
 
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-    - name: get-npm-version
-    - id: package-version
-    - uses: martinbeentjes/npm-get-version-action@master
     - name: Build the Docker image
       run: |
-
-        # Strip git ref prefix from version
-        VERSION=${{ steps.package-version.outputs.current-version}}
+        VERSION=$(cat ../../package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
         echo VERSION
         VERSION = $VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g'
         echo VERSION
