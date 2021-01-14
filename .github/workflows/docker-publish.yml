@@ -36,6 +36,7 @@ jobs:
       env:
         CI: true
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - id: 'release_manager'
