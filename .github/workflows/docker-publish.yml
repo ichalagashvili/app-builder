@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: 'release_manager'
-      - uses: ichalagashvili/release-manager@master
+        uses: ichalagashvili/release-manager@master
         with:
           who-to-greet: 'Mona the Octocat 1'
       - uses: actions/checkout@v2
