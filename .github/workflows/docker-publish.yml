@@ -10,13 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Get latest release of app-builder
-        uses: rez0n/actions-github-release@main
-        id: appbuilder_release
-        env:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: "ichalagashvili/app-builder"
-          type: "stable"
+      - id: 'release_manager'
+      - uses: ichalagashvili/release-manager@master
+        with:
+          who-to-greet: 'Mona the Octocat'
       - uses: actions/checkout@v2
       - name: docker login
         env:
@@ -26,12 +23,10 @@ jobs:
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: Build the Docker image
         run: |
-          echo ${{ steps.appbuilder_release.outputs.release }}
-          CURRENT_VERSION=${{ steps.appbuilder_release.outputs.release }}
-          echo CURRENT_VERSION=$CURRENT_VERSION
-          VERSION=$(echo $CURRENT_VERSION | awk 'BEGIN{FS=OFS="."} {$3+=1} 1')
+          echo ${{ steps.release_manager.outputs.nextTagName }}
+          VERSION=${{ steps.release_manager.outputs.nextTagName }}
           echo VERSION=$VERSION
           docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
           docker tag ichalagashvili/iraklis-builder:$VERSION ichalagashvili/iraklis-builder:$VERSION
-      - name: Docker Push
-        run: docker push ichalagashvili/iraklis-builder
+      # - name: Docker Push
+      #   run: docker push ichalagashvili/iraklis-builder
