@@ -3,13 +3,15 @@ on: [push]
 jobs:
   hello_world_job:
     runs-on: ubuntu-latest
-    name: A job to say hello
+    name: My release manager job 6
     steps:
     - name: Hello world action step
       id: hello
-      uses: ichalagashvili/release-manager@vmaster
+      uses: ichalagashvili/release-manager@master
       with:
-        who-to-greet: 'Mona the Octocat'
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        owner: 'ichalagashvili'
+        repo: 'app-builder'
     # Use the output from the `hello` step
     - name: Get the output time
       run: echo "The time was ${{ steps.hello.outputs.time }}"

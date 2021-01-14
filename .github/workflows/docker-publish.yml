@@ -3,31 +3,61 @@ name: Docker Image CI
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  # pull_request:
+  #   branches: [ master ]
 
 jobs:
-
-  build:
-
-    runs-on: ubuntu-latest
-
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [10.x, 12.x]
     steps:
-    - uses: actions/checkout@v2
-    - name: docker login
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: npm install and lint source code
+      run: |
+        npm install
+        npm run lint
       env:
-        DOCKER_USER: ${{secrets.DOCKER_USER}}
-        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        CI: true
+    - name: lint sass code
       run: |
-
-        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-    - name: Build the Docker image
+        npm run sass-lint
+      env:
+        CI: true
+    - name: test code and check coverage
       run: |
-        CURRENT_VERSION=$(cat ./package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
-        echo CURRENT_VERSION=$CURRENT_VERSION
-        VERSION=$(echo "6.3.0" | awk 'BEGIN{FS=OFS="."} {$3+=1} 1')
-        echo VERSION=$VERSION
-        docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
-        docker tag ichalagashvili/iraklis-builder:$VERSION ichalagashvili/iraklis-builder:$VERSION
-    - name: Docker Push
-      run: docker push ichalagashvili/iraklis-builder
+        npm run coverage
+      env:
+        CI: true
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - id: 'release_manager'
+        uses: ichalagashvili/release-manager@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          owner: 'ichalagashvili'
+          repo: 'app-builder'
+      - uses: actions/checkout@v2
+      - name: docker login
+        env:
+          DOCKER_USER: ${{secrets.DOCKER_USER}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Build the Docker image
+        run: |
+          echo ${{ steps.release_manager.outputs.nextTagName }}
+          VERSION=${{ steps.release_manager.outputs.nextTagName }}
+          echo VERSION=$VERSION
+          docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
+          docker tag ichalagashvili/iraklis-builder:$VERSION ichalagashvili/iraklis-builder:$VERSION
+      - name: Docker Push
+        run: docker push ichalagashvili/iraklis-builder
