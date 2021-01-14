@@ -13,7 +13,7 @@ jobs:
       - id: keydb
         uses: pozetroninc/github-action-get-latest-release@master
         with:
-          repository: ichalagashvili/app-builder
+          repository: ${{ github.repository }}
       - uses: actions/checkout@v2
       - name: docker login
         env:
