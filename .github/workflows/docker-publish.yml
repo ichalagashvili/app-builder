@@ -7,27 +7,29 @@ on:
     branches: [ master ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: docker login
-      env:
-        DOCKER_USER: ${{secrets.DOCKER_USER}}
-        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-      run: |
-
-        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-    - name: Build the Docker image
-      run: |
-        CURRENT_VERSION=$(cat ./package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
-        echo CURRENT_VERSION=$CURRENT_VERSION
-        VERSION=$(echo "6.3.0" | awk 'BEGIN{FS=OFS="."} {$3+=1} 1')
-        echo VERSION=$VERSION
-        docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
-        docker tag ichalagashvili/iraklis-builder:$VERSION ichalagashvili/iraklis-builder:$VERSION
-    - name: Docker Push
-      run: docker push ichalagashvili/iraklis-builder
+      - id: keydb
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: ichalagashvili
+          repo: app-builder
+          excludes: prerelease, draft
+      - uses: actions/checkout@v2
+      - name: docker login
+        env:
+          DOCKER_USER: ${{secrets.DOCKER_USER}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Build the Docker image
+        run: |
+          CURRENT_VERSION=${{ steps.keydb.outputs.release }}
+          echo CURRENT_VERSION=$CURRENT_VERSION
+          VERSION=$(echo $CURRENT_VERSION | awk 'BEGIN{FS=OFS="."} {$3+=1} 1')
+          echo VERSION=$VERSION
+          docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
+          docker tag ichalagashvili/iraklis-builder:$VERSION ichalagashvili/iraklis-builder:$VERSION
+      - name: Docker Push
+        run: docker push ichalagashvili/iraklis-builder
