@@ -3,13 +3,13 @@ on: [push]
 jobs:
   hello_world_job:
     runs-on: ubuntu-latest
-    name: My release manager job 2
+    name: My release manager job 3
     steps:
     - name: Hello world action step
       id: hello
       uses: ichalagashvili/release-manager@master
       with:
-        myToken: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         owner: 'ichalagashvili'
         repo: 'app-builder'
     # Use the output from the `hello` step
