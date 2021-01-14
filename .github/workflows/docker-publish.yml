@@ -13,7 +13,7 @@ jobs:
       - id: 'release_manager'
       - uses: ichalagashvili/release-manager@master
         with:
-          who-to-greet: 'Mona the Octocat'
+          who-to-greet: 'Mona the Octocat 1'
       - uses: actions/checkout@v2
       - name: docker login
         env:
