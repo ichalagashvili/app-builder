@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: keydb
-        uses: pozetroninc/github-action-get-latest-release@master
+        uses: pozetroninc/github-action-get-latest-release@0.5.0
         with:
           owner: ichalagashvili
           repo: app-builder
-          excludes: prerelease, draft
+          # excludes: prerelease, draft
       - uses: actions/checkout@v2
       - name: docker login
         env:
