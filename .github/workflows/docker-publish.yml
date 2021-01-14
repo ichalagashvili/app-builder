@@ -13,7 +13,7 @@ jobs:
       - id: 'release_manager'
         uses: ichalagashvili/release-manager@master
         with:
-          myToken: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           owner: 'ichalagashvili'
           repo: 'app-builder'
       - uses: actions/checkout@v2
