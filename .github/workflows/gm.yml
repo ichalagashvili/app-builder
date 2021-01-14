@@ -9,7 +9,7 @@ jobs:
       id: hello
       uses: ichalagashvili/release-manager@master
       with:
-        who-to-greet: 'Mona the Octocat 7'
+        who-to-greet: 'Mona the Octocat 8'
     # Use the output from the `hello` step
     - name: Get the output time
       run: echo "The time was ${{ steps.hello.outputs.time }}"
