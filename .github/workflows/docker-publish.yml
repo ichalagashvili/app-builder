@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - id: keydb
-        uses: pozetroninc/github-action-get-latest-release@0.5.0
+        uses: pozetroninc/github-action-get-latest-release@master
         with:
           owner: ichalagashvili
           repo: app-builder
