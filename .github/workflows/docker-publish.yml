@@ -13,9 +13,7 @@ jobs:
       - id: keydb
         uses: pozetroninc/github-action-get-latest-release@master
         with:
-          owner: ichalagashvili
-          repo: app-builder
-          # excludes: prerelease, draft
+          repository: ichalagashvili/app-builder
       - uses: actions/checkout@v2
       - name: docker login
         env:
