@@ -3,7 +3,7 @@ on: [push]
 jobs:
   hello_world_job:
     runs-on: ubuntu-latest
-    name: My release manager job 6
+    name: My release manager job 7
     steps:
     - name: Hello world action step
       id: hello
