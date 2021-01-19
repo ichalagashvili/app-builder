@@ -139,8 +139,19 @@ jobs:
         #oc get all --selector="$SELECTOR"
         echo "Starting my code"
         # 1. Clone helm quickstart from https://github.com/entando-k8s/entando-helm-quickstart/
+        git clone https://github.com/entando-k8s/entando-helm-quickstart/
+        # 1.1 CD into helm repo
+        cd entando-helm-quickstart
         # 2. Run its necessary steps. Probably overwrite values.yaml file with our config
-        # 3. generate new yaml and create new app: helm template --name=my-app  --namespace=[your-sandbox-namespace] ./ | kubectl create -f -
+        sed 's/your.domain.suffix.com/apps.rd.entando.org/g' values.yaml
+        cat values.yaml
+        echo "values shown"
+        helm version
+        echo "helm is good"
+        # 3. generate new yaml and create new app
+        helm template --name=irakli-app-builder  --namespace=irakli-builder ./ > irakli-builder.yaml
+        # 3.1 Do I need to run below line?
+        # kubectl create -f irakli-builder.yaml
         # 4. change project via
         oc project irakli-builder
         echo "project changed"
