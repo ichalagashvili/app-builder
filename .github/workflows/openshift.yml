@@ -48,11 +48,11 @@ env:
   APP_PORT: 8080
 
   # ⬇️ EDIT if you wish to set the kube context's namespace after login. Leave blank to use the default namespace.
-  OPENSHIFT_NAMESPACE: ""
+  OPENSHIFT_NAMESPACE: "irakli-builder"
 
   # If you wish to manually provide the APP_NAME and TAG, set them here, otherwise they will be auto-detected.
-  APP_NAME: ""
-  TAG: ""
+  APP_NAME: "irakli-app-builder"
+  TAG: "irakli-tag"
 
 on:
   # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
@@ -79,27 +79,27 @@ jobs:
         echo "TAG=${GITHUB_SHA::7}" | tee -a $GITHUB_ENV
 
     # https://github.com/redhat-actions/buildah-build#readme
-    - name: Build from Dockerfile
-      uses: redhat-actions/buildah-build@v1
-      with:
-        image: ${{ env.APP_NAME }}
-        tag: ${{ env.TAG }}
-        # If you don't have a dockerfile, see:
-        # https://github.com/redhat-actions/buildah-build#building-from-scratch
-        # Otherwise, point this to your Dockerfile relative to the repository root.
-        dockerfiles: |
-          ./Dockerfile
+#     - name: Build from Dockerfile
+#       uses: redhat-actions/buildah-build@v1
+#       with:
+#         image: ${{ env.APP_NAME }}
+#         tag: ${{ env.TAG }}
+#         # If you don't have a dockerfile, see:
+#         # https://github.com/redhat-actions/buildah-build#building-from-scratch
+#         # Otherwise, point this to your Dockerfile relative to the repository root.
+#         dockerfiles: |
+#           ./Dockerfile
 
     # https://github.com/redhat-actions/push-to-registry#readme
-    - name: Push to registry
-      id: push-to-registry
-      uses: redhat-actions/push-to-registry@v1
-      with:
-        image: ${{ env.APP_NAME }}
-        tag: ${{ env.TAG }}
-        registry: ${{ env.REGISTRY }}
-        username: ${{ env.REGISTRY_USER }}
-        password: ${{ env.REGISTRY_PASSWORD }}
+#     - name: Push to registry
+#       id: push-to-registry
+#       uses: redhat-actions/push-to-registry@v1
+#       with:
+#         image: ${{ env.APP_NAME }}
+#         tag: ${{ env.TAG }}
+#         registry: ${{ env.REGISTRY }}
+#         username: ${{ env.REGISTRY_USER }}
+#         password: ${{ env.REGISTRY_PASSWORD }}
 
     # The path the image was pushed to is now stored in ${{ steps.push-to-registry.outputs.registry-path }}
 
@@ -120,23 +120,38 @@ jobs:
     # Feel free to replace this with 'oc apply', 'helm install', or however you like to deploy your app.
     - name: Create and expose app
       run: |
-        export IMAGE="${{ steps.push-to-registry.outputs.registry-path }}"
-        export PORT=${{ env.APP_PORT }}
+        echo "Initiating protocol"
+        # export IMAGE="${{ steps.push-to-registry.outputs.registry-path }}"
+        # export PORT=${{ env.APP_PORT }}
 
-        export SELECTOR="app=${{ env.APP_NAME }}"
-        echo "SELECTOR=$SELECTOR" >> $GITHUB_ENV
+        # export SELECTOR="app=${{ env.APP_NAME }}"
+        # echo "SELECTOR=$SELECTOR" >> $GITHUB_ENV
 
-        set -x
+        # set -x
         # Take down any old deployment
-        oc delete all --selector="$SELECTOR"
-        oc new-app --name $APP_NAME --docker-image="$IMAGE"
+        # oc delete all --selector="$SELECTOR"
+        # oc new-app --name $APP_NAME --docker-image="$IMAGE"
 
         # Make sure the app port is exposed
-        oc patch svc $APP_NAME -p "{ \"spec\": { \"ports\": [{ \"name\": \"$PORT-tcp\", \"port\": $PORT }] } }"
-        oc expose service $APP_NAME --port=$PORT
+        #oc patch svc $APP_NAME -p "{ \"spec\": { \"ports\": [{ \"name\": \"$PORT-tcp\", \"port\": $PORT }] } }"
+        #oc expose service $APP_NAME --port=$PORT
 
-        oc get all --selector="$SELECTOR"
-        set +x
+        #oc get all --selector="$SELECTOR"
+        echo "Starting my code"
+        # 1. Clone helm quickstart from https://github.com/entando-k8s/entando-helm-quickstart/
+        # 2. Run its necessary steps. Probably overwrite values.yaml file with our config
+        # 3. generate new yaml and create new app: helm template --name=my-app  --namespace=[your-sandbox-namespace] ./ | kubectl create -f -
+        # 4. change project via
+        oc project irakli-builder
+        echo "project changed"
+        # 5. Delete old app
+        oc delete -f irakli-builder.yaml
+        echo "Deletion happened"
+        # 6. Deploy new app
+        oc create -f irakli-builder.yaml
+        echo "New app deployed"
+        
+        # set +x
 
         export ROUTE="$(oc get route $APP_NAME -o jsonpath='{.spec.host}')"
         echo "$APP_NAME is exposed at $ROUTE"
