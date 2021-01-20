@@ -85,6 +85,7 @@ jobs:
       - name: Docker Push
         run: docker push ichalagashvili/iraklis-builder
   openshift-ci-cd:
+    needs: build
     name: Build and deploy to OpenShift
     runs-on: ubuntu-20.04
 
