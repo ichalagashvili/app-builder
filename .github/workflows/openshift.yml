@@ -143,11 +143,12 @@ jobs:
         #oc get all --selector="$SELECTOR"
         echo "Starting my code"
         # 1. Clone helm quickstart from https://github.com/entando-k8s/entando-helm-quickstart/
-        git clone https://github.com/entando-k8s/entando-helm-quickstart/
+        # git clone https://github.com/entando-k8s/entando-helm-quickstart/
+        git clone https://github.com/ichalagashvili/entando-helm-quickstart
         # 1.1 CD into helm repo
         cd entando-helm-quickstart
         # 2. Run its necessary steps. Probably overwrite values.yaml file with our config
-        sed -i 's/your.domain.suffix.com/apps.rd.entando.org/g' values.yaml
+        # sed -i 's/your.domain.suffix.com/apps.rd.entando.org/g' values.yaml
         cat values.yaml
         echo "values shown"
         helm version
@@ -160,10 +161,10 @@ jobs:
         oc project irakli-builder
         echo "project changed"
         # 5. Delete old app
-        oc delete -f irakli-builder.yaml
+        #oc delete -f irakli-builder.yaml
         echo "Deletion happened"
         # 6. Deploy new app
-        # oc create -f irakli-builder.yaml
+        oc create -f irakli-builder.yaml
         echo "New app deployed"
         
         # set +x
