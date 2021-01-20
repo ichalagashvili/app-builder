@@ -149,7 +149,7 @@ jobs:
         # cd entando-helm-quickstart
         # 2. Run its necessary steps. Probably overwrite values.yaml file with our config
         # sed -i 's/your.domain.suffix.com/apps.rd.entando.org/g' values.yaml
-        cat values.yaml
+        # cat values.yaml
         echo "values shown"
         helm version
         echo "helm is good"
