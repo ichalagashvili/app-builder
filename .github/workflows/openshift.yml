@@ -161,7 +161,7 @@ jobs:
         # kubectl create -f irakli-builder.yaml
         # 4. change project via
         oc project irakli-builder
-        echo "project changed"
+        echo "project changed!"
         # 5. Delete old app
         #oc delete -f irakli-builder.yaml
         #oc delete -f $GITHUB_WORKSPACE/configmap.yaml
