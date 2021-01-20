@@ -155,13 +155,14 @@ jobs:
         echo "helm is good"
         # 3. generate new yaml and create new app
         helm template --name=irakli-app-builder  --namespace=irakli-builder ./ > irakli-builder.yaml
+        cat irakli-builder.yaml
         # 3.1 Do I need to run below line?
         # kubectl create -f irakli-builder.yaml
         # 4. change project via
         oc project irakli-builder
         echo "project changed"
         # 5. Delete old app
-        #oc delete -f irakli-builder.yaml
+        oc delete -f irakli-builder.yaml
         echo "Deletion happened"
         # 6. Deploy new app
         oc create -f irakli-builder.yaml
