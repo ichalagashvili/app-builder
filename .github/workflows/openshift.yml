@@ -164,7 +164,7 @@ jobs:
         echo "project changed"
         # 5. Delete old app
         #oc delete -f irakli-builder.yaml
-        oc delete -f $GITHUB_WORKSPACE/configmap.yaml
+        #oc delete -f $GITHUB_WORKSPACE/configmap.yaml
         echo "Deletion happened"
         # 6. Deploy new app
         # oc create -f irakli-builder.yaml
