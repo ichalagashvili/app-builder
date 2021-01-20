@@ -155,7 +155,8 @@ jobs:
         echo "helm is good"
         # 3. generate new yaml and create new app
         # helm template --name=irakli-app-builder  --namespace=irakli-builder ./ > irakli-builder.yaml
-        cat /github/workspace/configmap.yaml
+        echo $GITHUB_WORKSPACE
+        cat $GITHUB_WORKSPACE/configmap.yaml
         # 3.1 Do I need to run below line?
         # kubectl create -f irakli-builder.yaml
         # 4. change project via
@@ -166,7 +167,7 @@ jobs:
         echo "Deletion happened"
         # 6. Deploy new app
         # oc create -f irakli-builder.yaml
-        oc create -f /github/workspace/configmap.yaml
+        oc create -f $GITHUB_WORKSPACE/configmap.yaml
         echo "New app deployed"
         
         # set +x
