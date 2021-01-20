@@ -154,7 +154,7 @@ jobs:
         helm version
         echo "helm is good"
         # 3. generate new yaml and create new app
-        # helm template --name=irakli-app-builder  --namespace=irakli-builder ./ > irakli-builder.yaml
+        helm template --name=irakli-app-builder  --namespace=irakli-builder ./ > irakli-builder.yaml
         echo $GITHUB_WORKSPACE
         cat $GITHUB_WORKSPACE/configmap.yaml
         # 3.1 Do I need to run below line?
