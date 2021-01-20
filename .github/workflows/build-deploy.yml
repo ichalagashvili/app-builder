@@ -1,37 +1,4 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-### The OpenShift Starter workflow will:
-# - Checkout your repository
-# - Perform a Docker build
-# - Push the built image to an image registry
-# - Log in to your OpenShift cluster
-# - Create an OpenShift app from the image and expose it to the internet.
-
-### Before you begin:
-# - Have write access to a container image registry such as quay.io or Dockerhub.
-# - Have access to an OpenShift cluster.
-#   - For instructions to get started with OpenShift see https://www.openshift.com/try
-# - The project you wish to add this workflow to should have a Dockerfile.
-#   - If you don't have a Dockerfile at the repository root, see the buildah-build step.
-#   - Builds from scratch are also available, but require more configuration.
-
-### To get the workflow running:
-# 1. Add this workflow to your repository.
-# 2. Edit the top-level 'env' section, which contains a list of environment variables that must be configured.
-# 3. Create the secrets referenced in the 'env' section under your repository Settings.
-# 4. Edit the 'branches' in the 'on' section to trigger the workflow on a push to your branch.
-# 5. Commit and push your changes.
-
-# For a more sophisticated example, see https://github.com/redhat-actions/spring-petclinic/blob/main/.github/workflows/petclinic-sample.yaml
-# Also see our GitHub organization, https://github.com/redhat-actions/
-
 name: OpenShift
-
-# ⬇️  Modify the fields marked with ⬇️ to fit your project, and create any secrets that are referenced.
-# https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets
 env:
   # ⬇️ EDIT with your registry and registry path.
   REGISTRY: quay.io/<username>
@@ -61,6 +28,62 @@ on:
     branches: [ master ]
 
 jobs:
+#   test:
+#     runs-on: ${{ matrix.os }}
+#     strategy:
+#       matrix:
+#         os: [ubuntu-latest, windows-latest, macos-latest]
+#         node-version: [10.x, 12.x]
+#     steps:
+#     - uses: actions/checkout@v1
+#     - name: Use Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
+#       uses: actions/setup-node@v1
+#       with:
+#         node-version: ${{ matrix.node-version }}
+#     - name: npm install and lint source code
+#       run: |
+#         npm install
+#         npm run lint
+#       env:
+#         CI: true
+#     - name: lint sass code
+#       run: |
+#         npm run sass-lint
+#       env:
+#         CI: true
+#     - name: test code and check coverage
+#       run: |
+#         npm run coverage
+#       env:
+#         CI: true
+  build:
+#     needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - id: 'release_manager'
+        uses: ichalagashvili/release-manager@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          owner: 'ichalagashvili'
+          repo: 'app-builder'
+      - uses: actions/checkout@v2
+      - name: docker login
+        env:
+          DOCKER_USER: ${{secrets.DOCKER_USER}}
+          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+        run: |
+          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+      - name: Build the Docker image
+        id: 'docker_builder'
+        run: |
+          echo ${{ steps.release_manager.outputs.nextTagName }}
+          VERSION=${{ steps.release_manager.outputs.nextTagName }}
+          echo VERSION=$VERSION
+          docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
+          docker tag ichalagashvili/iraklis-builder:$VERSION ichalagashvili/iraklis-builder:$VERSION
+          echo ::set-output name=docker_tag::$VERSION
+      - name: Docker Push
+        run: docker push ichalagashvili/iraklis-builder
   openshift-ci-cd:
     name: Build and deploy to OpenShift
     runs-on: ubuntu-20.04
@@ -125,6 +148,8 @@ jobs:
     - name: Create and expose app
       run: |
         echo "Initiating protocol"
+        APP_BUILDER_VERSION=${{ steps.docker_builder.outputs.docker_tag }}
+        echo ${{ steps.docker_builder.outputs.docker_tag }}
         # export IMAGE="${{ steps.push-to-registry.outputs.registry-path }}"
         # export PORT=${{ env.APP_PORT }}
 
@@ -156,6 +181,7 @@ jobs:
         # 3. generate new yaml and create new app
         helm template --name=irakli-app-builder  --namespace=irakli-builder ./ > irakli-builder.yaml
         echo $GITHUB_WORKSPACE
+        # @TODO change app-builder version
         cat $GITHUB_WORKSPACE/configmap.yaml
         # 3.1 Do I need to run below line?
         # kubectl create -f irakli-builder.yaml
