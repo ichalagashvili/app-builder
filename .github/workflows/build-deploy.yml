@@ -1,30 +1,11 @@
 name: OpenShift
 env:
-  # ⬇️ EDIT with your registry and registry path.
-  REGISTRY: quay.io/<username>
-  # ⬇️ EDIT with your registry username.
-  REGISTRY_USER: <username>
-  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-
-  # ⬇️ EDIT to log into your OpenShift cluster and set up the context.
   # See https://github.com/redhat-actions/oc-login#readme for how to retrieve these values.
   OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
   OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
-
-  # ⬇️ EDIT with the port your application should be accessible on.
-  APP_PORT: 8080
-
-  # ⬇️ EDIT if you wish to set the kube context's namespace after login. Leave blank to use the default namespace.
   OPENSHIFT_NAMESPACE: "irakli-builder"
-
-  # If you wish to manually provide the APP_NAME and TAG, set them here, otherwise they will be auto-detected.
-  APP_NAME: "irakli-app-builder"
-  TAG: "irakli-tag"
-
 on:
-  # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
   push:
-    # Edit to the branch(es) you want to build and deploy on each push.
     branches: [ master ]
 
 jobs:
@@ -91,47 +72,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-
-    - name: Determine app name
-      if: env.APP_NAME == ''
-      run: |
-        echo "APP_NAME=$(basename $PWD)" | tee -a $GITHUB_ENV
-
-    - name: Determine tag
-      if: env.TAG == ''
-      run: |
-        echo "TAG=${GITHUB_SHA::7}" | tee -a $GITHUB_ENV
-
-    # https://github.com/redhat-actions/buildah-build#readme
-#     - name: Build from Dockerfile
-#       uses: redhat-actions/buildah-build@v1
-#       with:
-#         image: ${{ env.APP_NAME }}
-#         tag: ${{ env.TAG }}
-#         # If you don't have a dockerfile, see:
-#         # https://github.com/redhat-actions/buildah-build#building-from-scratch
-#         # Otherwise, point this to your Dockerfile relative to the repository root.
-#         dockerfiles: |
-#           ./Dockerfile
-
-    # https://github.com/redhat-actions/push-to-registry#readme
-#     - name: Push to registry
-#       id: push-to-registry
-#       uses: redhat-actions/push-to-registry@v1
-#       with:
-#         image: ${{ env.APP_NAME }}
-#         tag: ${{ env.TAG }}
-#         registry: ${{ env.REGISTRY }}
-#         username: ${{ env.REGISTRY_USER }}
-#         password: ${{ env.REGISTRY_PASSWORD }}
-
-    # The path the image was pushed to is now stored in ${{ steps.push-to-registry.outputs.registry-path }}
-
-    # oc-login works on all platforms, but oc must be installed first.
-    # The GitHub Ubuntu runner already includes oc.
-    # Otherwise, https://github.com/redhat-actions/oc-installer#readme is available.
-
-    # https://github.com/redhat-actions/oc-login#readme
     - name: Log in to OpenShift
       uses: redhat-actions/oc-login@v1
       with:
@@ -141,49 +81,30 @@ jobs:
         namespace: ${{ env.OPENSHIFT_NAMESPACE }}
     - uses: azure/setup-helm@v1
       with:
-        version: '2.16.7' # default is latest stable
+        version: '2.16.7'
       id: install  
-
-    # This step should create a deployment, service, and route to run your app and expose it to the internet.
-    # Feel free to replace this with 'oc apply', 'helm install', or however you like to deploy your app.
     - name: Create and expose app
       run: |
         echo "Initiating protocol"
-        APP_BUILDER_VERSION=${{ steps.docker_builder.outputs.docker_tag }}
-        echo ${{ steps.docker_builder.outputs.docker_tag }}
-        # export IMAGE="${{ steps.push-to-registry.outputs.registry-path }}"
-        # export PORT=${{ env.APP_PORT }}
+        echo ${{ steps.release_manager.outputs.nextTagName }}
+        VERSION=${{ steps.release_manager.outputs.nextTagName }}
 
-        # export SELECTOR="app=${{ env.APP_NAME }}"
-        # echo "SELECTOR=$SELECTOR" >> $GITHUB_ENV
-
-        # set -x
-        # Take down any old deployment
-        # oc delete all --selector="$SELECTOR"
-        # oc new-app --name $APP_NAME --docker-image="$IMAGE"
-
-        # Make sure the app port is exposed
-        #oc patch svc $APP_NAME -p "{ \"spec\": { \"ports\": [{ \"name\": \"$PORT-tcp\", \"port\": $PORT }] } }"
-        #oc expose service $APP_NAME --port=$PORT
-
-        #oc get all --selector="$SELECTOR"
-        echo "Starting my code"
         # 1. Clone helm quickstart from https://github.com/entando-k8s/entando-helm-quickstart/
         # git clone https://github.com/entando-k8s/entando-helm-quickstart/
-        git clone https://github.com/ichalagashvili/entando-helm-quickstart
+        # git clone https://github.com/ichalagashvili/entando-helm-quickstart
         # 1.1 CD into helm repo
-        cd entando-helm-quickstart
+        # cd entando-helm-quickstart
         # 2. Run its necessary steps. Probably overwrite values.yaml file with our config
         # sed -i 's/your.domain.suffix.com/apps.rd.entando.org/g' values.yaml
         # cat values.yaml
-        echo "values shown"
+        # echo "values shown"
         helm version
-        echo "helm is good"
+        # echo "helm is good"
         # 3. generate new yaml and create new app
-        helm template --name=irakli-app-builder  --namespace=irakli-builder ./ > irakli-builder.yaml
-        echo $GITHUB_WORKSPACE
+        # helm template --name=irakli-app-builder  --namespace=irakli-builder ./ > irakli-builder.yaml
+        # echo $GITHUB_WORKSPACE
         # @TODO change app-builder version
-        cat $GITHUB_WORKSPACE/configmap.yaml
+        # cat $GITHUB_WORKSPACE/configmap.yaml
         # 3.1 Do I need to run below line?
         # kubectl create -f irakli-builder.yaml
         # 4. change project via
@@ -192,22 +113,18 @@ jobs:
         # 5. Delete old app
         #oc delete -f irakli-builder.yaml
         #oc delete -f $GITHUB_WORKSPACE/configmap.yaml
-        echo "Deletion happened"
+        kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
+        echo "Deletion successfully executed."
+        # Add new version for app-builder
+        sed -i 's/.*app-builder.*/  app-builder: {"version":'\""$VERSION"\"',"executable-type":"jvm","registry":"docker.io","organization":"entando"}/' $GITHUB_WORKSPACE/configmap.yaml
         # 6. Deploy new app
-        # oc create -f irakli-builder.yaml
         oc create -f $GITHUB_WORKSPACE/configmap.yaml
-        echo "New app deployed"
-        
-        # set +x
-
-        # export ROUTE="$(oc get route $APP_NAME -o jsonpath='{.spec.host}')"
-        # echo "$APP_NAME is exposed at $ROUTE"
-        # echo "ROUTE=$ROUTE" >> $GITHUB_ENV
+        echo "New app has been deployed!"
 
     - name: View application route
       run: |
         echo "======================== Your application is available at: ========================"
-        echo put some value here
+        echo http://quickstart-irakli-builder.apps.rd.entando.org/app-builder/
         echo "==================================================================================="
         echo
-        echo "Your app can be taken down with: \"oc delete all --selector='${{ env.SELECTOR }}'\""
+        echo "You might need to wait 5-10 minutes until the deployment process is completely finished"
