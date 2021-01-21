@@ -6,7 +6,8 @@ metadata:
   name: entando-docker-image-info
   namespace: irakli-builder
 data:
-  app-builder: {"version":"6.1.292","executable-type":"jvm","registry":"docker.io","organization":"ichalagashvili"}
+  app-builder: >-
+    APP_BUILDER_URL
   busybox: >-
     {"version":"latest","executable-type":"jvm","registry":"docker.io","organization":"entando"}
   entando-avatar-plugin: >-
@@ -47,7 +48,6 @@ data:
     {"version":"latest","executable-type":"jvm","registry":"docker.io","organization":"entando"}
   postgresql-96-centos7: >-
     {"version":"latest","executable-type":"jvm","registry":"docker.io","organization":"entando"}
-
 ---
 # Source: preview/charts/operator/templates/k8s-service-serviceaccount.yaml
 
@@ -467,5 +467,4 @@ spec:
 
 ---
 # Source: preview/templates/db-admin-secret.yaml
-
 
