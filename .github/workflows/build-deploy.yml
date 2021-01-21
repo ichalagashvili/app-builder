@@ -80,6 +80,7 @@ jobs:
           echo "Deletion successfully executed."
           # Add new version for app-builder
           sed -i 's/.*app-builder.*/  app-builder: {"version":'\""$VERSION"\"',"executable-type":"jvm","registry":"docker.io","organization":"entando"}/' $GITHUB_WORKSPACE/configmap.yaml
+          cat $GITHUB_WORKSPACE/configmap.yaml
           # 6. Deploy new app
           oc create -f $GITHUB_WORKSPACE/configmap.yaml
           echo "New app has been deployed!"
