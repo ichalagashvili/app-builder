@@ -6,8 +6,7 @@ metadata:
   name: entando-docker-image-info
   namespace: irakli-builder
 data:
-  app-builder: >-
-    {"version":"6.1.292","executable-type":"jvm","registry":"docker.io","organization":"entando"}
+  app-builder: {"version":"6.1.292","executable-type":"jvm","registry":"docker.io","organization":"ichalagashvili"}
   busybox: >-
     {"version":"latest","executable-type":"jvm","registry":"docker.io","organization":"entando"}
   entando-avatar-plugin: >-
