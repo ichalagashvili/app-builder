@@ -33,7 +33,7 @@ jobs:
           echo VERSION=$VERSION
           # docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
           # docker tag ichalagashvili/iraklis-builder:$VERSION ichalagashvili/iraklis-builder:$VERSION
-          docker build . --file Dockerfile --tag iraklico/app-builder:$VERSION
+          docker build . --file Dockerfile_GH --tag iraklico/app-builder:$VERSION
           docker tag iraklico/app-builder:$VERSION iraklico/app-builder:$VERSION
           # echo ::set-output name=docker_tag::$VERSION
       - name: Docker Push
