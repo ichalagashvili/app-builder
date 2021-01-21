@@ -37,7 +37,7 @@ jobs:
           docker tag iraklico/app-builder:$VERSION iraklico/app-builder:$VERSION
           # echo ::set-output name=docker_tag::$VERSION
       - name: Docker Push
-        run: docker push iraklico/irakli-org
+        run: docker push iraklico/app-builder
       - name: Log in to OpenShift
         uses: redhat-actions/oc-login@v1
         with:
