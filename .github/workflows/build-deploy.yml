@@ -29,6 +29,9 @@ jobs:
           repo: 'app-builder'
       - name: Build App Builder
         run: |
+          node -v
+          node --v
+          node --version
           npm install;
           #npm rebuild node-sass;
           export USE_MOCKS=false;
