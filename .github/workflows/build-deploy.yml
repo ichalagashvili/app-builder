@@ -79,7 +79,7 @@ jobs:
           kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
           echo "Deletion successfully executed."
           # Add new version for app-builder
-          sed -i 's/.*app-builder.*/  app-builder: {"version":'\""$VERSION"\"',"executable-type":"jvm","registry":"docker.io","organization":"entando"}/' $GITHUB_WORKSPACE/configmap.yaml
+          sed -i 's/.*app-builder.*/  app-builder: {"version":'\""$VERSION"\"',"executable-type":"jvm","registry":"docker.io","organization":"ichalagashvili"}/' $GITHUB_WORKSPACE/configmap.yaml
           cat $GITHUB_WORKSPACE/configmap.yaml
           # 6. Deploy new app
           oc create -f $GITHUB_WORKSPACE/configmap.yaml
