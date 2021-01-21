@@ -1,9 +1,14 @@
 name: OpenShift
 env:
+  REGISTRY: https://hub.docker.com/r/iraklico/app-builder
+  REGISTRY_USER: ${{secrets.DOCKER_USER}}
+  REGISTRY_PASSWORD: ${{secrets.DOCKER_PASSWORD}}  
   # See https://github.com/redhat-actions/oc-login#readme for how to retrieve these values.
   OPENSHIFT_SERVER: ${{ secrets.OPENSHIFT_SERVER }}
   OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
   OPENSHIFT_NAMESPACE: "irakli-builder"
+  APP_NAME: "app-builder"
+  TAG: ""  
 on:
   push:
     branches: [ master ]
@@ -19,25 +24,26 @@ jobs:
           owner: 'ichalagashvili'
           repo: 'app-builder'
       - uses: actions/checkout@v2
-      - name: docker login
-        env:
-          DOCKER_USER: ${{secrets.DOCKER_USER}}
-          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-        run: |
-          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-      - name: Build the Docker image
-        id: 'docker_builder'
-        run: |
-          echo ${{ steps.release_manager.outputs.nextTagName }}
-          VERSION=${{ steps.release_manager.outputs.nextTagName }}
-          echo VERSION=$VERSION
-          # docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
-          # docker tag ichalagashvili/iraklis-builder:$VERSION ichalagashvili/iraklis-builder:$VERSION
-          docker build . --file Dockerfile_GH --tag iraklico/app-builder:$VERSION
-          docker tag iraklico/app-builder:$VERSION iraklico/app-builder:$VERSION
-          # echo ::set-output name=docker_tag::$VERSION
-      - name: Docker Push
-        run: docker push iraklico/app-builder
+      - name: Build from Dockerfile
+        uses: redhat-actions/buildah-build@v1
+        with:
+          image: ${{ env.APP_NAME }}
+          tag: ${{ env.TAG }}
+          # If you don't have a dockerfile, see:
+          # https://github.com/redhat-actions/buildah-build#building-from-scratch
+          # Otherwise, point this to your Dockerfile relative to the repository root.
+          dockerfiles: |
+            ./Dockerfile
+      # https://github.com/redhat-actions/push-to-registry#readme
+      - name: Push to registry
+        id: push-to-registry
+        uses: redhat-actions/push-to-registry@v1
+        with:
+          image: ${{ env.APP_NAME }}
+          tag: iraklico/app-builder:${{ steps.release_manager.outputs.nextTagName }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
       - name: Log in to OpenShift
         uses: redhat-actions/oc-login@v1
         with:
