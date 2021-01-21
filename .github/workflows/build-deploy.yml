@@ -9,36 +9,7 @@ on:
     branches: [ master ]
 
 jobs:
-#   test:
-#     runs-on: ${{ matrix.os }}
-#     strategy:
-#       matrix:
-#         os: [ubuntu-latest, windows-latest, macos-latest]
-#         node-version: [10.x, 12.x]
-#     steps:
-#     - uses: actions/checkout@v1
-#     - name: Use Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
-#       uses: actions/setup-node@v1
-#       with:
-#         node-version: ${{ matrix.node-version }}
-#     - name: npm install and lint source code
-#       run: |
-#         npm install
-#         npm run lint
-#       env:
-#         CI: true
-#     - name: lint sass code
-#       run: |
-#         npm run sass-lint
-#       env:
-#         CI: true
-#     - name: test code and check coverage
-#       run: |
-#         npm run coverage
-#       env:
-#         CI: true
   build:
-#     needs: test
     runs-on: ubuntu-latest
     steps:
       - id: 'release_manager'
@@ -59,6 +30,8 @@ jobs:
         run: |
           echo ${{ steps.release_manager.outputs.nextTagName }}
           VERSION=${{ steps.release_manager.outputs.nextTagName }}
+          #echo "APP_BUILDER_VERSION=$VERSION" | tee -a $GITHUB_ENV
+          echo "APP_BUILDER_VERSION=$VERSION" >> $GITHUB_ENV
           echo VERSION=$VERSION
           docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
           docker tag ichalagashvili/iraklis-builder:$VERSION ichalagashvili/iraklis-builder:$VERSION
@@ -86,9 +59,8 @@ jobs:
     - name: Create and expose app
       run: |
         echo "Initiating protocol"
-        echo ${{ steps.release_manager.outputs.nextTagName }}
-        VERSION=${{ steps.release_manager.outputs.nextTagName }}
-
+        echo ${{ env.APP_BUILDER_VERSION }}
+        VERSION=${{ env.APP_BUILDER_VERSION }}
         # 1. Clone helm quickstart from https://github.com/entando-k8s/entando-helm-quickstart/
         # git clone https://github.com/entando-k8s/entando-helm-quickstart/
         # git clone https://github.com/ichalagashvili/entando-helm-quickstart
