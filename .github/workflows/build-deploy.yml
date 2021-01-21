@@ -12,6 +12,9 @@ env:
 on:
   push:
     branches: [ master ]
+    paths:
+    - 'src/**/*'
+    - 'configmap.yaml'
 
 jobs:
   build-and-deploy:
