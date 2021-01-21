@@ -9,7 +9,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - id: 'release_manager'
@@ -30,75 +30,64 @@ jobs:
         run: |
           echo ${{ steps.release_manager.outputs.nextTagName }}
           VERSION=${{ steps.release_manager.outputs.nextTagName }}
-          echo "APP_BUILDER_VERSION=$VERSION" | tee -a $GITHUB_ENV
-          #echo "APP_BUILDER_VERSION=$VERSION" >> $GITHUB_ENV
           echo VERSION=$VERSION
           docker build . --file Dockerfile --tag ichalagashvili/iraklis-builder:$VERSION
           docker tag ichalagashvili/iraklis-builder:$VERSION ichalagashvili/iraklis-builder:$VERSION
           echo ::set-output name=docker_tag::$VERSION
       - name: Docker Push
         run: docker push ichalagashvili/iraklis-builder
-  openshift-ci-cd:
-    needs: build
-    name: Build and deploy to OpenShift
-    runs-on: ubuntu-20.04
+      - name: Log in to OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
+          openshift_token: ${{ env.OPENSHIFT_TOKEN }}
+          insecure_skip_tls_verify: true
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+      - uses: azure/setup-helm@v1
+        with:
+          version: '2.16.7'
+        id: install  
+      - name: Create and expose app
+        run: |
+          echo "Initiating protocol"
+          echo ${{ steps.release_manager.outputs.nextTagName }}
+          VERSION=${{ steps.release_manager.outputs.nextTagName }}
+          # 1. Clone helm quickstart from https://github.com/entando-k8s/entando-helm-quickstart/
+          # git clone https://github.com/entando-k8s/entando-helm-quickstart/
+          # git clone https://github.com/ichalagashvili/entando-helm-quickstart
+          # 1.1 CD into helm repo
+          # cd entando-helm-quickstart
+          # 2. Run its necessary steps. Probably overwrite values.yaml file with our config
+          # sed -i 's/your.domain.suffix.com/apps.rd.entando.org/g' values.yaml
+          # cat values.yaml
+          # echo "values shown"
+          helm version
+          # echo "helm is good"
+          # 3. generate new yaml and create new app
+          # helm template --name=irakli-app-builder  --namespace=irakli-builder ./ > irakli-builder.yaml
+          # echo $GITHUB_WORKSPACE
+          # @TODO change app-builder version
+          # cat $GITHUB_WORKSPACE/configmap.yaml
+          # 3.1 Do I need to run below line?
+          # kubectl create -f irakli-builder.yaml
+          # 4. change project via
+          oc project irakli-builder
+          echo "project changed!"
+          # 5. Delete old app
+          #oc delete -f irakli-builder.yaml
+          #oc delete -f $GITHUB_WORKSPACE/configmap.yaml
+          kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
+          echo "Deletion successfully executed."
+          # Add new version for app-builder
+          sed -i 's/.*app-builder.*/  app-builder: {"version":'\""$VERSION"\"',"executable-type":"jvm","registry":"docker.io","organization":"entando"}/' $GITHUB_WORKSPACE/configmap.yaml
+          # 6. Deploy new app
+          oc create -f $GITHUB_WORKSPACE/configmap.yaml
+          echo "New app has been deployed!"
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: Log in to OpenShift
-      uses: redhat-actions/oc-login@v1
-      with:
-        openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
-        openshift_token: ${{ env.OPENSHIFT_TOKEN }}
-        insecure_skip_tls_verify: true
-        namespace: ${{ env.OPENSHIFT_NAMESPACE }}
-    - uses: azure/setup-helm@v1
-      with:
-        version: '2.16.7'
-      id: install  
-    - name: Create and expose app
-      run: |
-        echo "Initiating protocol"
-        echo $GITHUB_ENV
-        echo ${{ env }}
-        echo ${{ env.APP_BUILDER_VERSION }}
-        VERSION=${{ env.APP_BUILDER_VERSION }}
-        # 1. Clone helm quickstart from https://github.com/entando-k8s/entando-helm-quickstart/
-        # git clone https://github.com/entando-k8s/entando-helm-quickstart/
-        # git clone https://github.com/ichalagashvili/entando-helm-quickstart
-        # 1.1 CD into helm repo
-        # cd entando-helm-quickstart
-        # 2. Run its necessary steps. Probably overwrite values.yaml file with our config
-        # sed -i 's/your.domain.suffix.com/apps.rd.entando.org/g' values.yaml
-        # cat values.yaml
-        # echo "values shown"
-        helm version
-        # echo "helm is good"
-        # 3. generate new yaml and create new app
-        # helm template --name=irakli-app-builder  --namespace=irakli-builder ./ > irakli-builder.yaml
-        # echo $GITHUB_WORKSPACE
-        # @TODO change app-builder version
-        # cat $GITHUB_WORKSPACE/configmap.yaml
-        # 3.1 Do I need to run below line?
-        # kubectl create -f irakli-builder.yaml
-        # 4. change project via
-        oc project irakli-builder
-        echo "project changed!"
-        # 5. Delete old app
-        #oc delete -f irakli-builder.yaml
-        #oc delete -f $GITHUB_WORKSPACE/configmap.yaml
-        kubectl delete "$(kubectl api-resources --namespaced=true --verbs=delete -o name | tr "\n" "," | sed -e 's/,$//')" --all
-        echo "Deletion successfully executed."
-        # Add new version for app-builder
-        sed -i 's/.*app-builder.*/  app-builder: {"version":'\""$VERSION"\"',"executable-type":"jvm","registry":"docker.io","organization":"entando"}/' $GITHUB_WORKSPACE/configmap.yaml
-        # 6. Deploy new app
-        oc create -f $GITHUB_WORKSPACE/configmap.yaml
-        echo "New app has been deployed!"
-
-    - name: View application route
-      run: |
-        echo "======================== Your application is available at: ========================"
-        echo http://quickstart-irakli-builder.apps.rd.entando.org/app-builder/
-        echo "==================================================================================="
-        echo
-        echo "You might need to wait 5-10 minutes until the deployment process is completely finished"
+      - name: View application route
+        run: |
+          echo "======================== Your application is available at: ========================"
+          echo http://quickstart-irakli-builder.apps.rd.entando.org/app-builder/
+          echo "==================================================================================="
+          echo
+          echo "You might need to wait 5-10 minutes until the deployment process is completely finished"
