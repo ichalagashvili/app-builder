@@ -11,7 +11,7 @@ export const mapDispatchToProps = dispatch => ({
     dispatch(touch('group', 'code'));
   },
   onFocus: (name) => {
-    console.log("Hey Judeee");
+    console.log('Hey Judeee');
     dispatch(touch('group', name));
   },
 });
