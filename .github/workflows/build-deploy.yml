@@ -24,6 +24,18 @@ jobs:
           owner: 'ichalagashvili'
           repo: 'app-builder'
       - uses: actions/checkout@v2
+      - name: Build App Builder
+        run: |
+          npm install;
+          npm rebuild node-sass;
+          export USE_MOCKS=false;
+          export PUBLIC_URL=/app-builder;
+          export DOMAIN=/entando-de-app;
+          export COMPONENT_REPOSITORY_UI_ENABLED=true;
+          export KEYCLOAK_ENABLED=true;
+          export LEGACY_ADMINCONSOLE_INTEGRATION_ENABLED=true;
+          npm run app-install cms;
+          npm run build --production;
       - name: Build from Dockerfile
         uses: redhat-actions/buildah-build@v1
         with:
