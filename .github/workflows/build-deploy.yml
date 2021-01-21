@@ -1,6 +1,6 @@
 name: OpenShift
 env:
-  REGISTRY: hub.docker.com/r/iraklico
+  REGISTRY: iraklico/app-builder
   REGISTRY_USER: ${{secrets.DOCKER_USER}}
   REGISTRY_PASSWORD: ${{secrets.DOCKER_PASSWORD}}  
   # See https://github.com/redhat-actions/oc-login#readme for how to retrieve these values.
