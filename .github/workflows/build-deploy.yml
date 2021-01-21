@@ -17,17 +17,20 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '12.16.1'
       - id: 'release_manager'
         uses: ichalagashvili/release-manager@master
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           owner: 'ichalagashvili'
           repo: 'app-builder'
-      - uses: actions/checkout@v2
       - name: Build App Builder
         run: |
           npm install;
-          npm rebuild node-sass;
+          #npm rebuild node-sass;
           export USE_MOCKS=false;
           export PUBLIC_URL=/app-builder;
           export DOMAIN=/entando-de-app;
