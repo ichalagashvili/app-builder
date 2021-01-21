@@ -45,7 +45,7 @@ jobs:
         uses: redhat-actions/buildah-build@v1
         with:
           image: ${{ env.APP_NAME }}
-          tag: iraklico/app-builder:${{ steps.release_manager.outputs.nextTagName }}
+          tag: ${{ steps.release_manager.outputs.nextTagName }}
           # If you don't have a dockerfile, see:
           # https://github.com/redhat-actions/buildah-build#building-from-scratch
           # Otherwise, point this to your Dockerfile relative to the repository root.
@@ -57,7 +57,7 @@ jobs:
         uses: redhat-actions/push-to-registry@v1
         with:
           image: ${{ env.APP_NAME }}
-          tag: iraklico/app-builder:${{ steps.release_manager.outputs.nextTagName }}
+          tag: ${{ steps.release_manager.outputs.nextTagName }}
           registry: ${{ env.REGISTRY }}
           username: ${{ env.REGISTRY_USER }}
           password: ${{ env.REGISTRY_PASSWORD }}
