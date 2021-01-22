@@ -30,6 +30,7 @@ class PageTreePage extends Component {
   }
 
   render() {
+    console.log('Heyyyy');
     return (
       <InternalPage className="PageTreePage">
         <Grid fluid>
