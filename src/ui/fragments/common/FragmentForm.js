@@ -8,7 +8,6 @@ import { FormattedMessage, defineMessages, injectIntl, intlShape } from 'react-i
 import RenderTextInput from 'ui/common/form/RenderTextInput';
 import FormLabel from 'ui/common/form/FormLabel';
 import ConfirmCancelModalContainer from 'ui/common/cancel-modal/ConfirmCancelModalContainer';
-
 const EDIT_MODE = 'edit';
 const NEW_MODE = 'new';
 
