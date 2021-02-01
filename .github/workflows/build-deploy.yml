@@ -33,6 +33,7 @@ jobs:
       - name: Build App Builder
         run: |
           node -v;
+          npm cache clean --force
           npm install;
           #npm rebuild node-sass;
           export USE_MOCKS=false;
